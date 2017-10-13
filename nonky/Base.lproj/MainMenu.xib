@@ -686,7 +686,7 @@
         </menu>
         <menu id="F9v-Oa-oXj" userLabel="StatusMenu">
             <items>
-                <menuItem title="About" id="IGR-U0-wnF">
+                <menuItem title="About nonky" id="IGR-U0-wnF">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
                         <action selector="orderFrontStandardAboutPanel:" target="-2" id="6na-O6-RhN"/>
@@ -697,8 +697,11 @@
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <menu key="submenu" id="js4-Py-fiO" userLabel="TemplatesMenu">
                         <items>
-                            <menuItem title="No Templates Loaded" id="7ad-I2-F8L">
+                            <menuItem title="Try to reconnect" id="7ad-I2-F8L">
                                 <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="tryToReconnect:" target="Voe-Tx-rLC" id="LXc-fv-aOe"/>
+                                </connections>
                             </menuItem>
                         </items>
                     </menu>
@@ -711,7 +714,7 @@
                     </connections>
                 </menuItem>
                 <menuItem isSeparatorItem="YES" id="xAo-MR-DT5"/>
-                <menuItem title="Quit Nonky" id="EEm-C0-saz">
+                <menuItem title="Quit nonky" id="EEm-C0-saz">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
                         <action selector="terminate:" target="-1" id="hgX-vf-Xbt"/>

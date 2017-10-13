@@ -24,7 +24,7 @@ static NSString *const qDefaultTemplates = @"default-templates";
     NSMutableDictionary *windows;
     NSUserDefaults *userDefaults;
     NSMutableDictionary *defaultTemplates;
-    
+    BOOL isServerUP;
 }
 
 @synthesize statusMenu;
@@ -35,11 +35,10 @@ static NSString *const qDefaultTemplates = @"default-templates";
     userDefaults = [NSUserDefaults standardUserDefaults];
     [self setDefaultsIfNecessary];
     defaultTemplates = [[userDefaults objectForKey:qDefaultTemplates] mutableCopy];
-    [self loadTemplatesFromDictionary:defaultTemplates];
     statusItem = [self addStatusItemToMenu: statusMenu];
     preferences = [[NOPreferencesController alloc]initWithWindowNibName:@"Preferences"];
     [self getTemplates];
-    
+
 }
 -(void)setDefaultsIfNecessary{
     if ([userDefaults objectForKey:qDefaultTemplates] == nil) {
@@ -51,9 +50,8 @@ static NSString *const qDefaultTemplates = @"default-templates";
 {
     NSStatusItem *statusItem = [[NSStatusBar systemStatusBar] statusItemWithLength:NSVariableStatusItemLength];
     
-    //NSImage *image = [[NSBundle mainBundle] imageForResource:@"status-icon"];
-    //[statusItem setImage: image];
-    statusItem.title = @"P";
+    NSImage *image = [[NSBundle mainBundle] imageForResource:@"status-icon"];
+    [statusItem setImage: image];
     statusItem.highlightMode = YES;
     statusItem.menu = menu;
     [statusItem setEnabled:YES];
@@ -90,6 +88,15 @@ static NSString *const qDefaultTemplates = @"default-templates";
                 for( NSMenuItem *item in [templatesMenu itemArray] ){
                     [templatesMenu removeItem:item];
                 }
+                NSMutableArray *deletedTempltes=[[NSMutableArray alloc] init];
+                for (id key in defaultTemplates){
+                    if(![templatesArray containsObject:key]){
+                        [deletedTempltes addObject:key];
+                    }
+                }
+                for (id key in deletedTempltes) {
+                    [defaultTemplates removeObjectForKey:key];
+                }
                 for (id object in templatesArray) {
                     NSMenuItem *menuItem = [[NSMenuItem alloc] initWithTitle:object action:@selector(toggleLoadTemplate:) keyEquivalent:@""];
                     [templatesMenu addItem:menuItem];
@@ -99,16 +106,16 @@ static NSString *const qDefaultTemplates = @"default-templates";
                     }else{
                         [menuItem setState:NSOffState];
                     }
-                    
                 }
+                [self loadTemplatesFromDictionary:defaultTemplates];
             });
-            
         }] resume];
     });
-
-    //
+    
 }
-
+- (IBAction)tryToReconnect:(id)sender{
+    [self getTemplates];
+}
 - (void)toggleLoadTemplate:(id)sender{
     if([sender state]==NSOffState){
         [sender setState:NSOnState];
