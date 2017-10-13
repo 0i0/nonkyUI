@@ -35,9 +35,11 @@ static NSString *const qDefaultTemplates = @"default-templates";
     userDefaults = [NSUserDefaults standardUserDefaults];
     [self setDefaultsIfNecessary];
     defaultTemplates = [[userDefaults objectForKey:qDefaultTemplates] mutableCopy];
+    [self loadTemplatesFromDictionary:defaultTemplates];
     statusItem = [self addStatusItemToMenu: statusMenu];
-    [self getTemplates];
     preferences = [[NOPreferencesController alloc]initWithWindowNibName:@"Preferences"];
+    [self getTemplates];
+    
 }
 -(void)setDefaultsIfNecessary{
     if ([userDefaults objectForKey:qDefaultTemplates] == nil) {
@@ -74,34 +76,37 @@ static NSString *const qDefaultTemplates = @"default-templates";
     NSMutableURLRequest *request = [[NSMutableURLRequest alloc] init];
     [request setURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@", qBaseUrlValue, @"/api/templates"]]];
     [request setHTTPMethod:@"GET"];
-    
-    NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]];
-    [[session dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
-        if (error) {
-            NSLog(@"dataTaskWithRequest error: %@", error);
-            return;
-        }
-        templatesArray = [NSJSONSerialization JSONObjectWithData:data
-                                                                  options:kNilOptions
-                                                                    error:&error];
-
-        for( NSMenuItem *item in [templatesMenu itemArray] ){
-            [templatesMenu removeItem:item];
-        }
-        for (id object in templatesArray) {
-            NSMenuItem *menuItem = [[NSMenuItem alloc] initWithTitle:object action:@selector(toggleLoadTemplate:) keyEquivalent:@""];
-            [templatesMenu addItem:menuItem];
-            NSString *defaultActiveState = [defaultTemplates objectForKey:object];
-            if([defaultActiveState boolValue]){
-                [menuItem setState:NSOnState];
-            }else{
-                [menuItem setState:NSOffState];
+    dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(void){
+        NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]];
+        [[session dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+            if (error) {
+                NSLog(@"dataTaskWithRequest error: %@", error);
+                return;
             }
+            templatesArray = [NSJSONSerialization JSONObjectWithData:data
+                                                             options:kNilOptions
+                                                               error:&error];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                for( NSMenuItem *item in [templatesMenu itemArray] ){
+                    [templatesMenu removeItem:item];
+                }
+                for (id object in templatesArray) {
+                    NSMenuItem *menuItem = [[NSMenuItem alloc] initWithTitle:object action:@selector(toggleLoadTemplate:) keyEquivalent:@""];
+                    [templatesMenu addItem:menuItem];
+                    NSString *defaultActiveState = [defaultTemplates objectForKey:object];
+                    if([defaultActiveState boolValue]){
+                        [menuItem setState:NSOnState];
+                    }else{
+                        [menuItem setState:NSOffState];
+                    }
+                    
+                }
+            });
+            
+        }] resume];
+    });
 
-        }
-       
-    }] resume];
-    //[self loadTemplatesFromDictionary:defaultTemplates];
+    //
 }
 
 - (void)toggleLoadTemplate:(id)sender{
@@ -134,10 +139,12 @@ static NSString *const qDefaultTemplates = @"default-templates";
 -(void)loadTemplateWithName:(NSString *)templateName{
     NSString* templateURL = [NSString stringWithFormat:@"%@%@%@", qBaseUrlValue,@"/templates/", templateName];
     [windows removeObjectForKey:templateName];
-    NOWindow *window = [[NOWindow alloc] init];
-    [windows setObject:window forKey:templateName];
-    [window loadUrl:[NSURL URLWithString:templateURL]];
-    [window makeKeyAndOrderFront:self];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        NOWindow *window = [[NOWindow alloc] init];
+        [windows setObject:window forKey:templateName];
+        [window loadUrl:[NSURL URLWithString:templateURL]];
+        [window makeKeyAndOrderFront:self];
+    });
 }
 
 

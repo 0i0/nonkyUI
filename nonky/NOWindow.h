@@ -6,6 +6,7 @@
 //  Copyright © 2017 Lior hakim. All rights reserved.
 //
 #import <Cocoa/Cocoa.h>
+@import WebKit;
 
 @interface NOWindow : NSWindow
 

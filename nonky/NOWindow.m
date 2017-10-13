@@ -7,17 +7,16 @@
 //
 
 #import "NOWindow.h"
-@import WebKit;
 
-@implementation NOWindow {
-    WKWebView *webView;
-}
 
+@implementation NOWindow{}
+
+@synthesize view;
 - (id)init
 {
     
     self = [super
-            initWithContentRect: NSMakeRect(0, 0, 100, 100)
+            initWithContentRect: NSMakeRect(0, 0, 0, 0)
             styleMask: NSWindowStyleMaskBorderless
             backing: NSBackingStoreBuffered
             defer: NO
@@ -38,16 +37,15 @@
         [self setDisplaysWhenScreenProfileChanges:YES];
         [self setReleasedWhenClosed:NO];
         [self fillScreen];
-        webView = [[WKWebView alloc]
-                              initWithFrame:self.frame];
-        [webView setValue:@YES forKey:@"drawsTransparentBackground"];
-        [self setContentView:webView];
+        view = [[WKWebView alloc] initWithFrame:self.frame];
+        [view setValue:@YES forKey:@"drawsTransparentBackground"];
+        [self setContentView:view];
     }
     
     return self;
 }
 - (void)loadUrl:(NSURL*)url{
-    [webView loadRequest:[NSURLRequest requestWithURL: url]];
+    [(WKWebView*)view loadRequest:[NSURLRequest requestWithURL: url]];
 }
 
 - (NSSize)screenResolution {
